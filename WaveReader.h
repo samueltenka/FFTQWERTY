@@ -1,3 +1,6 @@
+#ifndef WAVE_READER_H
+#define WAVE_READER_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -6,28 +9,35 @@ void read_wav_header(FILE* myfile, unsigned int *samp_rate, unsigned int *bits_p
 void read_wav_data(FILE* myfile, int *data, unsigned int samp_rate, unsigned int bits_per_samp, unsigned int num_samp);
 int conv_bit_size(unsigned int in, int bps);
 
-/*THX TO http://ubuntuforums.org/showthread.php?t=960693*/
-
+/*THX TO http://ubuntuforums.org/showthread.php?t=960693 */
+/*e.g.:
 int main(void)
 {
    const char* filename = "C:\\Users\\Samuel\\Documents\\Visual Studio 2013\\Projects\\SoundTest\\SoundTest\\sine_wobble.wav";
-   FILE* myfile; fopen_s(&myfile, filename, "rb");
+   
+   const int num_samp = 44100;
+   int data[num_samp];
+   read_wave(filename, data);
 
-   unsigned int samp_rate, bits_per_samp, num_samp;
-   read_wav_header(myfile, &samp_rate, &bits_per_samp, &num_samp);
-	printf("samp_rate=[%d] bits_per_samp=[%d] num_samp=[%d]\n",
-		     samp_rate, bits_per_samp, num_samp);
-
-	int *data = (int *) malloc(num_samp * sizeof(int));
-   read_wav_data(myfile, data, samp_rate, bits_per_samp, num_samp);
-
-   fclose(myfile);
 	unsigned int i;
 	for (i = 0; i < num_samp; i+=2) {
 		printf("%d %d\n", data[i], data[i+1]);
 	}
 
 	return EXIT_SUCCESS;
+}
+*/
+void read_wave(const char* filename, int data[]) {
+   FILE* myfile; fopen_s(&myfile, filename, "rb");
+   unsigned int samp_rate, bits_per_samp, num_samp;
+   read_wav_header(myfile, &samp_rate, &bits_per_samp, &num_samp);
+	printf("samp_rate=[%d] bits_per_samp=[%d] num_samp=[%d]\n",
+		     samp_rate, bits_per_samp, num_samp);
+
+	//int *data = (int *) malloc(num_samp * sizeof(int));
+   read_wav_data(myfile, data, samp_rate, bits_per_samp, num_samp);
+
+   fclose(myfile);
 }
 
 void read_wav_header(FILE* myfile, unsigned int *samp_rate, unsigned int *bits_per_samp, unsigned int *num_samp)
@@ -123,3 +133,5 @@ int conv_bit_size(unsigned int in, int bps)
         const unsigned int max = (1 << (bps-1)) - 1;
         return in > max ? in - (max<<1) : in;
 }
+
+#endif//WAVE_READER_H
