@@ -1,0 +1,47 @@
+#ifndef SPECTRO_H
+#define SPECTRO_H
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "fasttransforms.h"
+using namespace alglib;
+
+const int num_harms = 10;
+struct Spectrum { /*0th harmonic through 9th harmonic, where 1st harmonic=fundamental.*/
+   float weights[num_harms];
+   void normalize_amplitudes() {
+      float max = 0.0; 
+      for(int n=0; n<num_harms; ++n) {
+         max = max<weights[n] ? weights[n] : max;
+      }
+      for(int n=0; n<num_harms; ++n) {
+         weights[n] /= max;
+      }
+   }
+};
+
+float gaussian(float mu, float sig, float t) {
+   return exp(-(t-mu)*(t-mu)/(2*sig*sig));
+}
+float get_harm_weight(real_1d_array &f, int fundfreq, int n) {
+   int start = (int) (fundfreq*((float)n-0.5)); start = start<0 ? 0 : start;
+   int end = (int) (fundfreq*((float)n+0.5)); end = end>n ? n : end;
+
+   float integral=0.0; float normalizer = 0.001;
+   for(int i=start; i<end; ++i) {
+      float g = gaussian(fundfreq*n, fundfreq/4, i);
+      integral += f[i]*g; normalizer = g;
+   }
+   return integral/normalizer;
+}
+
+Spectrum get_spectrum(real_1d_array &f, int fundfreq) {
+   Spectrum rtrn;
+   for(int n=0; n<num_harms; ++n) {
+      rtrn.weights[n] = get_harm_weight(f, fundfreq, n);
+   }
+   return rtrn;
+}
+
+#endif//SPECTRO_H
